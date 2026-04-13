@@ -35,7 +35,7 @@ chmod +x ~/.claude/skills/AnyFile2Gbrain/setup.sh
 
 Just drop a file path in Claude Code conversation:
 ```
-"导入这个文件: ~/Documents/report.xlsx"
+"import this file: ~/Documents/report.xlsx"
 ```
 
 ## Adding New Skills
