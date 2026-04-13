@@ -1,24 +1,35 @@
 ---
 name: AnyFile2Gbrain
-description: Convert any file format (Excel, PPT, Word, PDF, CSV) to Markdown and import into Gbrain knowledge base. Auto-classifies content into brain directories (people/companies/projects/concepts/meetings/media).
+description: |
+  Convert any file format (Excel, PPT, Word, PDF, CSV) to Markdown and import 
+  into Gbrain knowledge base. Auto-classifies content into brain directories 
+  (people/companies/projects/concepts/meetings/media).
+  将任意格式文件转换为 Markdown 并导入 Gbrain 知识库，自动分类识别。
 ---
 
 # AnyFile2Gbrain
 
+[English](#english-skill) | [中文](#chinese-skill)
+
+---
+
+<a name="english-skill"></a>
+## English
+
 Convert any file format to Markdown and import into your Gbrain knowledge base.
 
-## Supported Formats
+### Supported Formats
 
 | Format | Extensions | Tool |
 |--------|-----------|------|
 | Excel | `.xlsx`, `.xls` | openpyxl + pandas |
-| PowerPoint | `.pptx`, `.ppt` | python-pptx |
-| Word | `.docx`, `.doc` | pandoc |
+| PowerPoint | `.pptx` | python-pptx |
+| Word | `.docx` | pandoc |
 | PDF | `.pdf` | pdfplumber / pandoc |
 | CSV | `.csv` | pandas |
 | Text | `.txt`, `.md` | direct import |
 
-## Setup
+### Setup
 
 Run this once before first use:
 
@@ -27,7 +38,7 @@ chmod +x ~/.claude/skills/AnyFile2Gbrain/setup.sh
 ~/.claude/skills/AnyFile2Gbrain/setup.sh
 ```
 
-## Workflow
+### Workflow
 
 When user provides a file path:
 
@@ -45,11 +56,11 @@ When user provides a file path:
 
 | Keywords | Directory | Example |
 |----------|-----------|---------|
-| name, profile, bio, resume, CV | `people/` | `John-Smith-Profile.xlsx` → `people/john-smith.md` |
-| company, corp, inc, startup, org | `companies/` | `Acme-Corp-Financials.xlsx` → `companies/acme-corp.md` |
-| meeting, notes, call, discussion, sync | `meetings/` | `2026-04-13-team-meeting.pptx` → `meetings/2026-04-13-team-meeting.md` |
-| idea, concept, theory, insight, brainstorm | `concepts/` | `New-Feature-Idea.docx` → `concepts/new-feature-idea.md` |
-| article, book, paper, summary, review | `media/` | `AI-Trends-2026.pdf` → `media/ai-trends-2026.md` |
+| name, profile, bio, resume, CV | `people/` | `John-Profile.xlsx` → `people/john.md` |
+| company, corp, inc, startup, org | `companies/` | `Acme-Financials.xlsx` → `companies/acme.md` |
+| meeting, notes, call, discussion, sync | `meetings/` | `Team-Meeting.pptx` → `meetings/team-meeting.md` |
+| idea, concept, theory, insight, brainstorm | `concepts/` | `Feature-Idea.docx` → `concepts/feature-idea.md` |
+| article, book, paper, summary, review | `media/` | `AI-Trends.pdf` → `media/ai-trends.md` |
 | (default) | `projects/` | `Q1-Report.xlsx` → `projects/q1-report.md` |
 
 **Slug generation**: lowercase, hyphens, remove special chars
@@ -94,14 +105,12 @@ for slide_num, slide in enumerate(prs.slides, 1):
     for shape in slide.shapes:
         if hasattr(shape, 'text') and shape.text.strip():
             md += shape.text.strip() + '\n\n'
-    # Check for tables
     for shape in slide.shapes:
         if shape.has_table:
             table = shape.table
             rows = []
             for row in table.rows:
                 rows.append([cell.text.strip() for cell in row.cells])
-            # Markdown table
             if rows:
                 header = '| ' + ' | '.join(rows[0]) + ' |'
                 separator = '| ' + ' | '.join(['---'] * len(rows[0])) + ' |'
@@ -122,7 +131,6 @@ Or fallback with python-docx:
 ```bash
 python3 -c "
 from docx import Document
-import sys
 
 doc = Document('$FILE_PATH')
 md = ''
@@ -141,7 +149,6 @@ for para in doc.paragraphs:
     else:
         md += text + '\n\n'
 
-# Tables
 for table in doc.tables:
     rows = [[cell.text.strip() for cell in row.cells] for row in table.rows]
     if rows:
@@ -157,9 +164,7 @@ print(md)
 ### PDF → Markdown
 
 ```bash
-# Try pandoc first (best for structured PDFs)
 pandoc '$FILE_PATH' -t markdown --wrap=none > /tmp/converted.md 2>/dev/null || \
-# Fallback to pdfplumber for text extraction
 python3 -c "
 import pdfplumber
 
@@ -188,16 +193,10 @@ print(df.fillna('').to_markdown(index=False))
 
 ## Import to Gbrain
 
-After conversion, write to brain and sync:
-
 ```bash
-# Generate slug from filename
 SLUG=$(basename '$FILE_PATH' | sed 's/\.[^.]*$//' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/^-//;s/-$//')
-
-# Determine category (use classification rules above)
 CATEGORY="<determined-category>"
 
-# Add frontmatter
 cat > ~/brain/$CATEGORY/$SLUG.md << 'EOF'
 ---
 type: media
@@ -209,34 +208,84 @@ imported: $(date +%Y-%m-%d)
 
 EOF
 
-# Append converted content
 cat /tmp/converted.md >> ~/brain/$CATEGORY/$SLUG.md
-
-# Sync and embed
 gbrain sync --repo ~/brain
 gbrain embed --stale
-
 echo "Imported to: ~/brain/$CATEGORY/$SLUG.md"
 ```
 
 ---
 
-## Example Usage
+<a name="chinese-skill"></a>
+## 中文
 
-User: "Import this file: ~/Documents/Q1-Financial-Report.xlsx"
+将任意格式文件转换为 Markdown 并导入 Gbrain 知识库。
 
-Agent:
-1. Detects Excel format
-2. Converts to Markdown table
-3. Classifies to `projects/` (financial report)
-4. Writes to `~/brain/projects/q1-financial-report.md`
-5. Syncs and embeds
-6. Reports: "✅ Imported Q1-Financial-Report.xlsx to projects/q1-financial-report.md"
+### 支持格式
+
+| 格式 | 扩展名 | 转换工具 |
+|------|--------|----------|
+| Excel | `.xlsx`, `.xls` | openpyxl + pandas |
+| PowerPoint | `.pptx` | python-pptx |
+| Word | `.docx` | pandoc |
+| PDF | `.pdf` | pdfplumber / pandoc |
+| CSV | `.csv` | pandas |
+| 文本 | `.txt`, `.md` | 直接导入 |
+
+### 安装
+
+首次使用前运行：
+
+```bash
+chmod +x ~/.claude/skills/AnyFile2Gbrain/setup.sh
+~/.claude/skills/AnyFile2Gbrain/setup.sh
+```
+
+### 工作流程
+
+用户提供文件路径后：
+
+1. **检测格式** — 根据扩展名识别
+2. **转换 Markdown** — 使用对应工具转换
+3. **自动分类** — 根据文件名/内容关键词推断
+4. **写入 brain** — 存入 `~/brain/<分类目录>/`
+5. **同步嵌入** — 执行 `gbrain sync --repo ~/brain && gbrain embed --stale`
 
 ---
 
-## Notes
+## 自动分类规则
 
-- For uncertain classification, ask user: "I'm not sure where to put this. Should it go to people/, companies/, projects/, concepts/, meetings/, or media/?"
-- Large files may need chunking for better embedding
-- Binary files (images in PPT) cannot be converted to text - note this in the output
+**根据文件名和内容推断目标目录：**
+
+| 关键词 | 目录 | 示例 |
+|--------|------|------|
+| name, profile, bio, resume, CV, 个人, 简介 | `people/` | `张三简介.xlsx` → `people/zhang-san.md` |
+| company, corp, inc, startup, org, 公司, 企业 | `companies/` | `阿里财报.xlsx` → `companies/alibaba.md` |
+| meeting, notes, call, discussion, sync, 会议, 讨论 | `meetings/` | `周会纪要.pptx` → `meetings/weekly-meeting.md` |
+| idea, concept, theory, insight, brainstorm, 想法, 创意 | `concepts/` | `新功能创意.docx` → `concepts/new-feature.md` |
+| article, book, paper, summary, review, 文章, 书籍 | `media/` | `AI趋势.pdf` → `media/ai-trends.md` |
+| (默认) | `projects/` | `Q1报告.xlsx` → `projects/q1-report.md` |
+
+**Slug 生成规则**：小写、连字符、移除特殊字符
+
+---
+
+## 使用示例
+
+用户: "导入这个文件: ~/Documents/Q1-财务报表.xlsx"
+
+Agent:
+1. 检测为 Excel 格式
+2. 转换为 Markdown 表格
+3. 分类到 `projects/`（财务报表）
+4. 写入 `~/brain/projects/q1-财务报表.md`
+5. 同步并嵌入
+6. 返回: "✅ 已导入 Q1-财务报表.xlsx 到 projects/q1-财务报表.md"
+
+---
+
+## 注意事项
+
+- 分类不确定时询问用户："不确定分类，请选择：people/、companies/、projects/、concepts/、meetings/ 或 media/"
+- 大文件可能需要分块以获得更好的嵌入效果
+- PPT 中的图片无法转换为文本，需在输出中注明
