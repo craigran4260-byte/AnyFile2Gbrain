@@ -49,10 +49,10 @@ Files are automatically sorted based on filename and content:
 
 ```bash
 # Clone the repo
-git clone https://github.com/craigran4260-byte/AnyFile2Gbrain.git
+git clone https://github.com/craigran4260-byte/AnyFile2Gbrain-skill.git
 
 # Copy to Claude skills directory
-cp -r AnyFile2Gbrain/AnyFile2Gbrain ~/.claude/skills/
+cp -r AnyFile2Gbrain-skill/AnyFile2Gbrain ~/.claude/skills/
 
 # Install dependencies
 chmod +x ~/.claude/skills/AnyFile2Gbrain/setup.sh
